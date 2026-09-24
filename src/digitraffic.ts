@@ -9,6 +9,8 @@ import L from 'leaflet';
 
 const API = 'https://tie.digitraffic.fi';
 const CAMERA_IMAGES = 'https://weathercam.digitraffic.fi';
+const ATTRIBUTION =
+  'Liikennetiedot &copy; <a href="https://www.digitraffic.fi/">Fintraffic / digitraffic.fi</a>, CC BY 4.0';
 /** Digitraffic asks clients to identify themselves with this header. */
 const USER_HEADER = { 'Digitraffic-User': 'SuomiKartta' };
 
@@ -119,7 +121,7 @@ function liveLayer(
   load: (group: L.LayerGroup) => Promise<void>,
   refreshMs?: number,
 ): L.LayerGroup {
-  const group = L.layerGroup();
+  const group = L.layerGroup(undefined, { attribution: ATTRIBUTION });
   let timer: number | undefined;
   let loaded = false;
   let loading = false;
