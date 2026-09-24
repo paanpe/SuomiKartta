@@ -1,17 +1,39 @@
 import L from 'leaflet';
+import { MML_PROXY_URL } from './config';
 import { FINLAND_BOUNDS } from './map';
 
+/** A search hit, in the same shape whichever service answered. */
+interface Place {
+  label: string;
+  latlng: L.LatLng;
+  bounds?: L.LatLngBounds;
+}
+
 interface NominatimResult {
-  place_id: number;
   display_name: string;
   lat: string;
   lon: string;
   boundingbox: [string, string, string, string];
 }
 
+/** A feature from MML's Pelias-style geocoding, in WGS84 (longitude, latitude). */
+interface MmlFeature {
+  geometry: { coordinates: [number, number] };
+  bbox?: [number, number, number, number];
+  properties: { label?: string; name?: string };
+}
+
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
-async function searchPlaces(query: string, signal: AbortSignal): Promise<NominatimResult[]> {
+async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Haku epäonnistui (${response.status})`);
+  }
+  return response.json();
+}
+
+async function searchNominatim(query: string, signal: AbortSignal): Promise<Place[]> {
   const bounds = FINLAND_BOUNDS;
   const params = new URLSearchParams({
     q: query,
@@ -21,11 +43,38 @@ async function searchPlaces(query: string, signal: AbortSignal): Promise<Nominat
     'accept-language': 'fi',
     viewbox: [bounds.getWest(), bounds.getNorth(), bounds.getEast(), bounds.getSouth()].join(','),
   });
-  const response = await fetch(`${NOMINATIM_URL}?${params}`, { signal });
-  if (!response.ok) {
-    throw new Error(`Haku epäonnistui (${response.status})`);
-  }
-  return response.json();
+  const results = await fetchJson<NominatimResult[]>(`${NOMINATIM_URL}?${params}`, signal);
+  return results.map((result) => {
+    const [south, north, west, east] = result.boundingbox.map(Number);
+    return {
+      label: result.display_name,
+      latlng: L.latLng(Number(result.lat), Number(result.lon)),
+      bounds: L.latLngBounds([south, west], [north, east]),
+    };
+  });
+}
+
+async function searchMml(proxyUrl: string, query: string, signal: AbortSignal): Promise<Place[]> {
+  const params = new URLSearchParams({ text: query });
+  const { features } = await fetchJson<{ features: MmlFeature[] }>(
+    `${proxyUrl}/search?${params}`,
+    signal,
+  );
+  return features.map((feature) => {
+    const [lng, lat] = feature.geometry.coordinates;
+    const bbox = feature.bbox;
+    return {
+      label: feature.properties.label ?? feature.properties.name ?? `${lat}, ${lng}`,
+      latlng: L.latLng(lat, lng),
+      bounds: bbox ? L.latLngBounds([bbox[1], bbox[0]], [bbox[3], bbox[2]]) : undefined,
+    };
+  });
+}
+
+function searchPlaces(query: string, signal: AbortSignal): Promise<Place[]> {
+  return MML_PROXY_URL
+    ? searchMml(MML_PROXY_URL, query, signal)
+    : searchNominatim(query, signal);
 }
 
 export function setupSearch(
@@ -50,13 +99,15 @@ export function setupSearch(
     resultList.hidden = false;
   };
 
-  const selectResult = (result: NominatimResult) => {
-    const latlng = L.latLng(Number(result.lat), Number(result.lon));
-    const [south, north, west, east] = result.boundingbox.map(Number);
-    map.fitBounds([[south, west], [north, east]], { maxZoom: 15 });
+  const selectResult = (place: Place) => {
+    if (place.bounds?.isValid() && !place.bounds.getNorthEast().equals(place.bounds.getSouthWest())) {
+      map.fitBounds(place.bounds, { maxZoom: 15 });
+    } else {
+      map.setView(place.latlng, 14);
+    }
     marker?.remove();
-    marker = L.marker(latlng).addTo(map).bindPopup(result.display_name).openPopup();
-    input.value = result.display_name.split(',')[0];
+    marker = L.marker(place.latlng).addTo(map).bindPopup(place.label).openPopup();
+    input.value = place.label.split(',')[0];
     hideResults();
   };
 
@@ -79,7 +130,7 @@ export function setupSearch(
         const item = document.createElement('li');
         const button = document.createElement('button');
         button.type = 'button';
-        button.textContent = result.display_name;
+        button.textContent = result.label;
         button.addEventListener('click', () => selectResult(result));
         item.append(button);
         return item;

@@ -1,0 +1,45 @@
+name: Deploy to Azure Static Web Apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: swa
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+    steps:
+      - name: Check that the Static Web App is set up
+        if: env.SWA_TOKEN == ''
+        run: echo "::notice::AZURE_STATIC_WEB_APPS_API_TOKEN is not set; skipping deploy."
+      - uses: actions/checkout@v4
+        if: env.SWA_TOKEN != ''
+      - uses: actions/setup-node@v4
+        if: env.SWA_TOKEN != ''
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.SWA_TOKEN != ''
+        run: npm ci
+      - if: env.SWA_TOKEN != ''
+        run: npm run build
+        env:
+          # The API is served from the same site under /api.
+          VITE_MML_PROXY_URL: /api
+      - uses: Azure/static-web-apps-deploy@v1
+        if: env.SWA_TOKEN != ''
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: dist
+          skip_app_build: true
+          api_location: api

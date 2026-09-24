@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "",
+    "MML_API_KEY": "oma-mml-api-avain",
+    "ALLOWED_ORIGINS": "http://localhost:5173"
+  }
+}
