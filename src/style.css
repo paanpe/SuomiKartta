@@ -173,3 +173,9 @@ body {
   margin-top: 6px;
   border-radius: 2px;
 }
+
+.dt-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+}

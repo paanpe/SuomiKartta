@@ -59,6 +59,7 @@ interface CameraProps extends StationProps {
 }
 
 interface MaintenanceProps {
+  id?: number;
   time?: string;
   tasks?: string[];
   source?: string;
@@ -73,6 +74,7 @@ interface Announcement {
 }
 
 interface TrafficMessageProps {
+  situationId?: string;
   situationType?: string;
   trafficAnnouncementType?: string;
   announcements?: Announcement[];
@@ -80,6 +82,11 @@ interface TrafficMessageProps {
 
 function escapeHtml(text: unknown): string {
   return String(text ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/** A link to the item's own record in the Digitraffic API. */
+function dataLink(path: string): string {
+  return `<a class="dt-link" href="${escapeHtml(API + path)}" target="_blank" rel="noopener">Avaa tiedot Digitrafficissa</a>`;
 }
 
 function formatTime(iso?: string): string {
@@ -183,11 +190,13 @@ function maintenanceLayer(map: L.Map): L.LayerGroup {
         },
         onEachFeature: (feature, featureLayer) => {
           const props = (feature.properties ?? {}) as MaintenanceProps;
+          const id = props.id ?? feature.id;
           const tasks = (props.tasks ?? []).map((t) => `<li>${escapeHtml(names.get(t) ?? t)}</li>`).join('');
           featureLayer.bindPopup(
             `<strong>Kunnossapitoajoneuvo</strong>` +
               (tasks ? `<ul class="dt-list">${tasks}</ul>` : '') +
-              `<div class="dt-muted">${escapeHtml(props.source ?? '')} ${escapeHtml(formatTime(props.time))}</div>`,
+              `<div class="dt-muted">${escapeHtml(props.source ?? '')} ${escapeHtml(formatTime(props.time))}</div>` +
+              (id != null ? dataLink(`/api/maintenance/v1/tracking/routes/${encodeURIComponent(id)}`) : ''),
           );
         },
       });
@@ -208,6 +217,9 @@ function messageColor(props: TrafficMessageProps): string {
 }
 
 function messagePopup(props: TrafficMessageProps): string {
+  const link = props.situationId
+    ? dataLink(`/api/traffic-message/v1/messages/${encodeURIComponent(props.situationId)}`)
+    : '';
   return (props.announcements ?? [])
     .map((a) => {
       const features = (a.features ?? [])
@@ -225,7 +237,7 @@ function messagePopup(props: TrafficMessageProps): string {
         (start ? `<div class="dt-muted">${escapeHtml(start)}${end ? ` – ${escapeHtml(end)}` : ''}</div>` : '')
       );
     })
-    .join('<hr>');
+    .join('<hr>') + link;
 }
 
 function trafficMessageLayer(map: L.Map): L.LayerGroup {
@@ -294,15 +306,16 @@ function stationLayer(map: L.Map, label: string, path: string, color: string): L
         fillOpacity: 0.9,
       });
       const title = `<strong>${escapeHtml(props.name ?? `${props.id}`)}</strong>`;
-      marker.bindPopup(`${title}<p>Ladataan…</p>`, { maxWidth: 320 });
+      const link = dataLink(`${path}/stations/${encodeURIComponent(props.id)}/data`);
+      marker.bindPopup(`${title}<p>Ladataan…</p>${link}`, { maxWidth: 320 });
       marker.on('popupopen', async () => {
         try {
           const values = await dtFetch<StationData>(`${path}/stations/${props.id}/data`);
           marker.setPopupContent(
-            `${title}${sensorTable(values)}<div class="dt-muted">Päivitetty ${escapeHtml(formatTime(values.dataUpdatedTime))}</div>`,
+            `${title}${sensorTable(values)}<div class="dt-muted">Päivitetty ${escapeHtml(formatTime(values.dataUpdatedTime))}</div>${link}`,
           );
         } catch {
-          marker.setPopupContent(`${title}<p>Mittaustietojen haku epäonnistui.</p>`);
+          marker.setPopupContent(`${title}<p>Mittaustietojen haku epäonnistui.</p>${link}`);
         }
       });
       group.addLayer(marker);
@@ -340,7 +353,8 @@ function weatherCameraLayer(map: L.Map): L.LayerGroup {
                 `<a href="${CAMERA_IMAGES}/${encodeURIComponent(p.id)}.jpg" target="_blank" rel="noopener">` +
                 `<img class="dt-camera" src="${CAMERA_IMAGES}/${encodeURIComponent(p.id)}.jpg?t=${Date.now()}" alt="Kelikamerakuva ${escapeHtml(p.id)}" loading="lazy"></a>`,
             )
-            .join(''),
+            .join('') +
+          dataLink(`/api/weathercam/v1/stations/${encodeURIComponent(props.id)}`),
         { maxWidth: 340, minWidth: 280 },
       );
       group.addLayer(marker);
