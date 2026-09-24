@@ -36,43 +36,35 @@ https://paanpe.github.io/SuomiKartta/.
 
 ## Maanmittauslaitoksen kartat ja API-avain
 
-MML:n rajapinnat vaativat API-avaimen. GitHub Pages jakaa vain staattisia
-tiedostoja, joten avainta ei laiteta sovellukseen. Sen sijaan `api/`-kansiossa on
-Azure Function, joka pitää avaimen salaisena asetuksena ja välittää karttaruudut
-ja haut MML:lle:
+MML:n rajapinnat vaativat API-avaimen, jota ei saa laittaa selaimeen ladattavaan
+sovellukseen. Siksi MML-kartoilla varustettu versio julkaistaan
+[Azure Static Web Appsiin](https://learn.microsoft.com/azure/static-web-apps/)
+(ilmainen Free-taso). Siellä sama sivusto sisältää `api/`-kansion funktion, joka
+pitää avaimen salaisena asetuksena ja välittää karttaruudut ja haut MML:lle:
 
 ```
-selain  →  https://<sovellus>.azurewebsites.net/api/tiles/{taso}/{z}/{y}/{x}  →  MML WMTS
-selain  →  https://<sovellus>.azurewebsites.net/api/search?text=...        →  MML geocoding
+selain  →  https://<sovellus>.azurestaticapps.net/api/tiles/{taso}/{z}/{y}/{x}  →  MML WMTS
+selain  →  https://<sovellus>.azurestaticapps.net/api/search?text=...        →  MML geocoding
 ```
 
-Välityspalvelin palvelee vain sivuja, joiden osoite on `ALLOWED_ORIGINS`-listassa.
+Funktio palvelee vain saman sivuston sivuja ja `ALLOWED_ORIGINS`-listan osoitteita.
 Tämä estää muita sivustoja käyttämästä sitä suoraan, mutta ei ole vahva suojaus.
+GitHub Pagesin versio jatkaa ilman MML:ää OpenStreetMapin varassa.
 
 ### Käyttöönotto (kerran)
 
 1. **API-avain:** rekisteröidy Maanmittauslaitoksen
    [Oma tili -palveluun](https://omatili.maanmittauslaitos.fi/) ja luo API-avain.
-2. **Function App:** luo Azure-portaalissa Function App: ajoympäristö Node.js 22,
-   hosting-suunnitelma *Consumption*. Suunnitelman ilmaisosuus riittää pieneen
-   käyttöön.
-3. **Asetukset:** Function Appin *Settings → Environment variables* -kohtaan:
-   - `MML_API_KEY` = API-avain
-   - `ALLOWED_ORIGINS` = `https://paanpe.github.io`
-
-   Älä ota käyttöön Azuren omaa CORS-asetusta, koska funktio hoitaa CORS-otsakkeet itse.
-4. **Julkaisu GitHubista:** salli *Configuration → General settings* -kohdassa
-   *SCM Basic Auth Publishing Credentials*, lataa Function Appin
-   *publish profile* ja lisää se repositorion salaisuudeksi
-   (*Settings → Secrets and variables → Actions*):
-   - salaisuus `AZURE_FUNCTIONAPP_PUBLISH_PROFILE` = publish profile -tiedoston sisältö
-   - muuttuja `AZURE_FUNCTIONAPP_NAME` = Function Appin nimi
-
-   Aja sitten *Deploy MML proxy to Azure Functions* -työnkulku Actions-välilehdeltä.
-   Jatkossa se ajetaan aina, kun `api/`-kansio muuttuu `main`-haarassa.
-5. **Sovellus käyttöön:** lisää repositorion muuttuja
-   `MML_PROXY_URL` = `https://<sovellus>.azurewebsites.net/api` ja aja
-   *Deploy to GitHub Pages* uudelleen.
+2. **Static Web App:** luo Azure-portaalissa *Static Web App*, suunnitelmaksi
+   *Free*. Valitse julkaisulähteeksi *Other* (julkaisu tehdään tämän repositorion
+   omalla työnkululla).
+3. **Asetukset:** Static Web Appin *Settings → Environment variables* -kohtaan
+   `MML_API_KEY` = API-avain.
+4. **Julkaisu GitHubista:** kopioi Static Web Appin *Overview → Manage deployment
+   token* -kohdasta tunnus ja lisää se repositorion salaisuudeksi
+   `AZURE_STATIC_WEB_APPS_API_TOKEN` (*Settings → Secrets and variables → Actions*).
+   Aja sitten *Deploy to Azure Static Web Apps* -työnkulku Actions-välilehdeltä.
+   Jatkossa se ajetaan aina, kun `main`-haara muuttuu.
 
 ### Paikallinen kehitys
 
@@ -86,6 +78,7 @@ npm start                                            # http://localhost:7071/api
 
 # toisessa terminaalissa repositorion juuressa
 echo "VITE_MML_PROXY_URL=http://localhost:7071/api" > .env.local
+# ja api/local.settings.json: ALLOWED_ORIGINS=http://localhost:5173
 npm run dev
 ```
 
@@ -98,7 +91,8 @@ src/config.ts               MML-välityspalvelimen osoite (VITE_MML_PROXY_URL)
 src/map.ts                  kartan luonti, taustakartat, sijaintipainike
 src/search.ts               paikkahaku (MML tai Nominatim)
 src/style.css               tyylit
-api/src/functions/mml.js    Azure Function: MML-välityspalvelin
+api/src/functions/mml.js    MML-välityspalvelin (Static Web Appin funktio)
+public/staticwebapp.config.json  Static Web Appin asetukset
 ```
 
 ## Huomioita

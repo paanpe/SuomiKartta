@@ -39,14 +39,20 @@ function requestOrigin(request) {
   }
 }
 
+/** The site's own origin; the app is served from the same host as the API. */
+function ownOrigin(request) {
+  const host = request.headers.get('x-forwarded-host') ?? new URL(request.url).host;
+  return `https://${host}`;
+}
+
 /**
- * Only pages on the allowed origins may use the proxy. Headers can be forged
- * outside a browser, so this keeps other sites from hotlinking rather than
- * stopping a determined abuser.
+ * Only the site itself and the origins in ALLOWED_ORIGINS may use the proxy.
+ * Headers can be forged outside a browser, so this keeps other sites from
+ * hotlinking rather than stopping a determined abuser.
  */
 function checkRequest(request) {
   const origin = requestOrigin(request);
-  if (!origin || !allowedOrigins().includes(origin)) {
+  if (!origin || (origin !== ownOrigin(request) && !allowedOrigins().includes(origin))) {
     return { error: { status: 403, body: 'Kielletty' } };
   }
   const apiKey = process.env.MML_API_KEY;
