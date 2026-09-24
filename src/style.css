@@ -1,0 +1,129 @@
+:root {
+  --color-primary: #003580;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #666666;
+  --topbar-height: 56px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  color: var(--color-text);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--topbar-height);
+  padding: 0 16px;
+  background: var(--color-primary);
+  color: #fff;
+  z-index: 1000;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.25rem;
+  white-space: nowrap;
+}
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 1;
+  max-width: 480px;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 1rem;
+}
+
+.search > button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  background: #e6ecf5;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.search-results button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-results button:hover,
+.search-results button:focus-visible {
+  background: #eef2f8;
+}
+
+.search-message {
+  padding: 8px 12px;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+#map {
+  flex: 1;
+}
+
+.locate-button {
+  width: 34px;
+  height: 34px;
+  background: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.locate-button:hover {
+  background: #f4f4f4;
+}
+
+@media (max-width: 480px) {
+  .brand {
+    display: none;
+  }
+}
