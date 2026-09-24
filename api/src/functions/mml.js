@@ -39,10 +39,27 @@ function requestOrigin(request) {
   }
 }
 
-/** The site's own origin; the app is served from the same host as the API. */
-function ownOrigin(request) {
-  const host = request.headers.get('x-forwarded-host') ?? new URL(request.url).host;
-  return `https://${host}`;
+/**
+ * The site's own origins. The app is served from the same host as the API, but
+ * the platform may forward the request under an internal host name, so every
+ * header that can carry the public one is accepted.
+ */
+function ownOrigins(request) {
+  const hosts = [
+    request.headers.get('x-forwarded-host'),
+    request.headers.get('host'),
+    new URL(request.url).host,
+  ];
+  const origins = hosts.filter(Boolean).map((host) => `https://${host.split(',')[0].trim()}`);
+  const originalUrl = request.headers.get('x-ms-original-url');
+  if (originalUrl) {
+    try {
+      origins.push(new URL(originalUrl).origin);
+    } catch {
+      // Ignore a malformed header.
+    }
+  }
+  return origins;
 }
 
 /**
@@ -52,7 +69,7 @@ function ownOrigin(request) {
  */
 function checkRequest(request) {
   const origin = requestOrigin(request);
-  if (!origin || (origin !== ownOrigin(request) && !allowedOrigins().includes(origin))) {
+  if (!origin || ![...ownOrigins(request), ...allowedOrigins()].includes(origin)) {
     return { error: { status: 403, body: 'Kielletty' } };
   }
   const apiKey = process.env.MML_API_KEY;
@@ -60,6 +77,13 @@ function checkRequest(request) {
     return { error: { status: 500, body: 'MML_API_KEY puuttuu palvelimen asetuksista' } };
   }
   return { apiKey, cors: { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } };
+}
+
+function tileUrl(layer, z, y, x, apiKey) {
+  return (
+    `${WMTS_URL}/${layer}/default/WGS84_Pseudo-Mercator/${z}/${y}/${x}.${LAYERS[layer]}` +
+    `?api-key=${encodeURIComponent(apiKey)}`
+  );
 }
 
 async function forward(url, cors, cacheSeconds) {
@@ -84,13 +108,11 @@ app.http('tiles', {
     if (error) return error;
 
     const { layer, z, y, x } = request.params;
-    const format = Object.hasOwn(LAYERS, layer) ? LAYERS[layer] : undefined;
-    if (!format) return { status: 404, headers: cors, body: 'Tuntematon karttataso' };
+    if (!Object.hasOwn(LAYERS, layer)) {
+      return { status: 404, headers: cors, body: 'Tuntematon karttataso' };
+    }
 
-    const url =
-      `${WMTS_URL}/${layer}/default/WGS84_Pseudo-Mercator/${z}/${y}/${x}.${format}` +
-      `?api-key=${encodeURIComponent(apiKey)}`;
-    return forward(url, cors, 7 * 24 * 60 * 60);
+    return forward(tileUrl(layer, z, y, x, apiKey), cors, 7 * 24 * 60 * 60);
   },
 });
 
@@ -115,5 +137,47 @@ app.http('search', {
       'api-key': apiKey,
     });
     return forward(`${GEOCODING_URL}?${params}`, cors, 60 * 60);
+  },
+});
+
+/** Tries MML with the configured key, to diagnose setup problems. */
+async function probe(url, apiKey) {
+  try {
+    const response = await fetch(url);
+    const result = { status: response.status, contentType: response.headers.get('content-type') };
+    if (!response.ok) {
+      result.body = (await response.text()).slice(0, 300).replaceAll(apiKey, '***');
+    }
+    return result;
+  } catch (error) {
+    return { error: String(error) };
+  }
+}
+
+// Open /api/status in the browser to see whether the proxy is set up. It never
+// shows the API key itself.
+app.http('status', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'status',
+  handler: async (request) => {
+    const apiKey = process.env.MML_API_KEY;
+    const report = {
+      apiKeyConfigured: Boolean(apiKey),
+      ownOrigins: ownOrigins(request),
+      allowedOrigins: allowedOrigins(),
+    };
+    if (apiKey) {
+      report.tile = await probe(tileUrl('taustakartta', 5, 9, 18, apiKey), apiKey);
+      const params = new URLSearchParams({
+        text: 'Oulu',
+        size: '1',
+        lang: 'fin',
+        crs: CRS84,
+        'api-key': apiKey,
+      });
+      report.search = await probe(`${GEOCODING_URL}?${params}`, apiKey);
+    }
+    return { jsonBody: report, headers: { 'Cache-Control': 'no-store' } };
   },
 });
