@@ -10,10 +10,10 @@ import type { OverlayGroup } from './layer-panel';
 
 const API = 'https://tie.digitraffic.fi';
 const CAMERA_IMAGES = 'https://weathercam.digitraffic.fi';
-const ATTRIBUTION =
+export const ATTRIBUTION =
   'Liikennetiedot &copy; <a href="https://www.digitraffic.fi/">Fintraffic / digitraffic.fi</a>, CC BY 4.0';
 /** Digitraffic asks clients to identify themselves with this header. */
-const USER_HEADER = { 'Digitraffic-User': 'SuomiKartta' };
+export const USER_HEADER = { 'Digitraffic-User': 'SuomiKartta' };
 
 let sendUserHeader = true;
 
@@ -112,7 +112,7 @@ interface TrafficMessageProps {
   announcements?: Announcement[];
 }
 
-function escapeHtml(text: unknown): string {
+export function escapeHtml(text: unknown): string {
   return String(text ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
@@ -121,7 +121,7 @@ function dataLink(path: string): string {
   return `<a class="dt-link" href="${escapeHtml(API + path)}" target="_blank" rel="noopener">Avaa tiedot Digitrafficissa</a>`;
 }
 
-function formatTime(iso?: string): string {
+export function formatTime(iso?: string): string {
   if (!iso) return '';
   const date = new Date(iso);
   return Number.isNaN(date.getTime())
@@ -138,7 +138,7 @@ function toLatLng(geometry: GeoJSON.Geometry | null): L.LatLng | undefined {
 let noticeTimer: number | undefined;
 
 /** Shows a short message at the bottom of the map when a dataset fails to load. */
-function showNotice(map: L.Map, text: string): void {
+export function showNotice(map: L.Map, text: string): void {
   let box = map.getContainer().querySelector<HTMLDivElement>('.dt-notice');
   if (!box) {
     box = L.DomUtil.create('div', 'dt-notice', map.getContainer());
@@ -154,7 +154,7 @@ function showNotice(map: L.Map, text: string): void {
  * A layer group that fills itself with `load` when it is added to the map and,
  * when `refreshMs` is given, reloads on that interval while it stays on.
  */
-function liveLayer(
+export function liveLayer(
   map: L.Map,
   label: string,
   load: (group: L.LayerGroup) => Promise<void>,
@@ -206,7 +206,7 @@ function compassDirection(degrees: number): string {
 }
 
 /** Rows of a two-column fact table; rows with an empty value are left out. */
-function factTable(rows: [string, string | undefined][]): string {
+export function factTable(rows: [string, string | undefined][]): string {
   const html = rows
     .filter(([, value]) => value)
     .map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`)
