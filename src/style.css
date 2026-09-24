@@ -127,3 +127,49 @@ body {
     display: none;
   }
 }
+
+.dt-notice {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.75);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.dt-list {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+
+.dt-muted {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.dt-table {
+  display: block;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 6px 0;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.dt-table th {
+  padding: 2px 8px 2px 0;
+  font-weight: normal;
+  text-align: left;
+  color: var(--color-muted);
+}
+
+.dt-camera {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  border-radius: 2px;
+}

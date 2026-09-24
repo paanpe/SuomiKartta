@@ -1,5 +1,6 @@
 import L from 'leaflet';
 import { MML_PROXY_URL } from './config';
+import { createDigitrafficOverlays } from './digitraffic';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -65,11 +66,13 @@ export function createMap(container: HTMLElement): L.Map {
     zoom: 5,
     minZoom: 4,
     maxBounds: FINLAND_BOUNDS.pad(0.5),
+    // Canvas draws the thousands of Digitraffic markers much faster than SVG.
+    preferCanvas: true,
   });
 
   const baseLayers = createBaseLayers();
   Object.values(baseLayers)[0].addTo(map);
-  L.control.layers(baseLayers, undefined, { position: 'topright' }).addTo(map);
+  L.control.layers(baseLayers, createDigitrafficOverlays(map), { position: 'topright' }).addTo(map);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
   addLocateControl(map);
