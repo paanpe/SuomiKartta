@@ -179,3 +179,16 @@ body {
   margin-top: 6px;
   font-size: 0.85rem;
 }
+
+.dt-type {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.dt-phase {
+  margin-top: 6px;
+}
+
+.dt-figure {
+  margin: 6px 0 0;
+}
