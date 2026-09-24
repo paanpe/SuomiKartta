@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import { MML_PROXY_URL } from './config';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -15,13 +16,34 @@ L.Icon.Default.mergeOptions({
 export const FINLAND_BOUNDS = L.latLngBounds([58.5, 18.0], [70.5, 33.0]);
 const FINLAND_CENTER: L.LatLngTuple = [64.9, 26.0];
 
+function mmlLayer(proxyUrl: string, layer: string): L.TileLayer {
+  return L.tileLayer(`${proxyUrl}/tiles/${layer}/{z}/{y}/{x}`, {
+    maxNativeZoom: 16,
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata-lisenssi-cc40">Maanmittauslaitos</a>',
+  });
+}
+
 function createBaseLayers(): Record<string, L.TileLayer> {
+  const openStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> -tekijät',
+  });
+
+  if (MML_PROXY_URL) {
+    return {
+      Taustakartta: mmlLayer(MML_PROXY_URL, 'taustakartta'),
+      Maastokartta: mmlLayer(MML_PROXY_URL, 'maastokartta'),
+      Selkokartta: mmlLayer(MML_PROXY_URL, 'selkokartta'),
+      Ilmakuva: mmlLayer(MML_PROXY_URL, 'ortokuva'),
+      OpenStreetMap: openStreetMap,
+    };
+  }
+
   return {
-    OpenStreetMap: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> -tekijät',
-    }),
+    OpenStreetMap: openStreetMap,
     Maastokartta: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       maxZoom: 17,
       attribution:
@@ -46,7 +68,7 @@ export function createMap(container: HTMLElement): L.Map {
   });
 
   const baseLayers = createBaseLayers();
-  baseLayers.OpenStreetMap.addTo(map);
+  Object.values(baseLayers)[0].addTo(map);
   L.control.layers(baseLayers, undefined, { position: 'topright' }).addTo(map);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
