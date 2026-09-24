@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import { MML_PROXY_URL } from './config';
 import { createDigitrafficOverlays } from './digitraffic';
+import { createLayerPanel } from './layer-panel';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -60,7 +61,11 @@ export function formatLatLng(latlng: L.LatLng): string {
   return `${lat}, ${lng}`;
 }
 
-export function createMap(container: HTMLElement): L.Map {
+export function createMap(
+  container: HTMLElement,
+  panel: HTMLElement,
+  panelToggle: HTMLButtonElement,
+): L.Map {
   const map = L.map(container, {
     center: FINLAND_CENTER,
     zoom: 5,
@@ -72,7 +77,7 @@ export function createMap(container: HTMLElement): L.Map {
 
   const baseLayers = createBaseLayers();
   Object.values(baseLayers)[0].addTo(map);
-  L.control.layers(baseLayers, createDigitrafficOverlays(map), { position: 'topright' }).addTo(map);
+  createLayerPanel(map, panel, panelToggle, baseLayers, [createDigitrafficOverlays(map)]);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
   addLocateControl(map);

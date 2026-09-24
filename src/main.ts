@@ -3,7 +3,11 @@ import './style.css';
 import { createMap } from './map';
 import { setupSearch } from './search';
 
-const map = createMap(document.getElementById('map')!);
+const map = createMap(
+  document.getElementById('map')!,
+  document.getElementById('layer-panel')!,
+  document.getElementById('panel-toggle') as HTMLButtonElement,
+);
 
 setupSearch(
   map,
