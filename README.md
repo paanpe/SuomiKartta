@@ -15,6 +15,12 @@ Selainpohjainen karttasovellus, joka keskittyy Suomeen. Rakennettu
   omina tasoinaan (oletuksena pois päältä): auraus- ja kunnossapitoajoneuvot
   (päivittyy minuutin välein), liikennetiedotteet ja tietyöt (2 min), tiesääasemat,
   LAM-pisteet ja kelikamerat (mittaukset ja kuvat haetaan, kun pisteen avaa)
+- Säätiedot [Ilmatieteen laitoksen avoimesta datasta](https://www.ilmatieteenlaitos.fi/avoin-data)
+  Sää-ryhmässä (oletuksena pois päältä): säävaroitukset värillisinä alueina (5 min),
+  sadetutka läpikuultavana kuvana, jonka aika näkyy kartalla ja josta klikkaus
+  näyttää sateen voimakkuuden (5 min), sekä viimeisen tunnin salamat, jotka
+  haalistuvat iän mukaan (1 min). Jos Ilmatieteen laitos estää selaimen suorat
+  haut, Azure-versio hakee ne välityspalvelimen `/api/fmi`-reitin kautta
 - Oman sijainnin näyttäminen (◎-painike)
 - Klikkaus kartalla näyttää pisteen koordinaatit (WGS84)
 - Mittakaava
@@ -95,8 +101,10 @@ src/config.ts               MML-välityspalvelimen osoite (VITE_MML_PROXY_URL)
 src/map.ts                  kartan luonti, taustakartat, sijaintipainike
 src/search.ts               paikkahaku (MML tai Nominatim)
 src/digitraffic.ts          Digitraffic-tieliikennetasot
+src/fmi.ts                  Ilmatieteen laitoksen säätasot
 src/style.css               tyylit
 api/src/functions/mml.js    MML-välityspalvelin (Static Web Appin funktio)
+api/src/functions/fmi.js    Ilmatieteen laitoksen varareitti, jos suora haku estyy
 public/staticwebapp.config.json  Static Web Appin asetukset
 ```
 
@@ -109,3 +117,5 @@ OpenStreetMapin karttaruutu- ja Nominatim-palveluilla on
 kehitykseen ja pieneen käyttöön.
 Digitrafficin liikennetiedot ovat Fintrafficin avointa dataa
 (CC BY 4.0), eikä niiden käyttö vaadi avainta.
+Ilmatieteen laitoksen säätiedot ovat avointa dataa (CC BY 4.0), eikä
+niiden käyttö vaadi avainta.
