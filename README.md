@@ -7,7 +7,7 @@ Selainpohjainen karttasovellus, joka keskittyy Suomeen. Rakennettu
 
 - Kartta keskitetty Suomeen, liikkuminen rajattu Suomen ympäristöön
 - Taustakartat Maanmittauslaitokselta (taustakartta, maastokartta, selkokartta,
-  ilmakuva) sekä OpenStreetMap, valinta oikeasta yläkulmasta
+  ilmakuva) sekä OpenStreetMap, valinta kartan vasemmalla puolella olevasta Karttatasot-paneelista (mobiilissa Tasot-painikkeesta)
 - Paikannimi- ja osoitehaku Maanmittauslaitoksen hakupalvelulla
 - Ilman MML-välityspalvelinta sovellus käyttää OpenStreetMapia, OpenTopoMapia ja
   Nominatim-hakua

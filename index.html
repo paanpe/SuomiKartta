@@ -8,6 +8,10 @@
   </head>
   <body>
     <header class="topbar">
+      <button id="panel-toggle" class="panel-toggle" type="button" aria-controls="layer-panel" aria-expanded="true" title="Karttatasot">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2 1 8l11 6 11-6-11-6Zm0 14.2L3.3 11.4 1 12.7l11 6 11-6-2.3-1.3L12 16.2Zm0 4.6-8.7-4.8L1 17.3 12 23l11-5.7-2.3-1.3L12 20.8Z"/></svg>
+        <span class="panel-toggle-label">Tasot</span>
+      </button>
       <h1 class="brand">SuomiKartta</h1>
       <form id="search-form" class="search" role="search" autocomplete="off">
         <input
@@ -20,7 +24,11 @@
         <ul id="search-results" class="search-results" hidden></ul>
       </form>
     </header>
-    <main id="map" aria-label="Kartta"></main>
+    <div class="layout">
+      <aside id="layer-panel" class="layer-panel" aria-label="Karttatasot"></aside>
+      <div class="panel-backdrop"></div>
+      <main id="map" aria-label="Kartta"></main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

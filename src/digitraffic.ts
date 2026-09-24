@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import type { OverlayGroup } from './layer-panel';
 
 /**
  * Road data from Fintraffic's Digitraffic (https://www.digitraffic.fi/tieliikenne/).
@@ -568,12 +569,48 @@ function weatherCameraLayer(map: L.Map): L.LayerGroup {
   });
 }
 
-export function createDigitrafficOverlays(map: L.Map): Record<string, L.LayerGroup> {
+export function createDigitrafficOverlays(map: L.Map): OverlayGroup {
   return {
-    'Auraus ja kunnossapito': maintenanceLayer(map),
-    'Liikennetiedotteet': trafficMessageLayer(map),
-    'Tiesääasemat': stationLayer(map, 'Tiesääasemat', '/api/weather/v1', '#1e88e5', weatherPopup),
-    'LAM-pisteet': stationLayer(map, 'LAM-pisteet', '/api/tms/v1', '#6d4c41', tmsPopup),
-    'Kelikamerat': weatherCameraLayer(map),
+    title: 'Tieliikenne',
+    source: 'Fintraffic / Digitraffic',
+    items: [
+      {
+        name: 'Auraus ja kunnossapito',
+        description: 'Aurat ja muut huoltoautot nyt',
+        layer: maintenanceLayer(map),
+        legend: [
+          { color: '#0057b8', label: 'Aurauksessa' },
+          { color: '#2e9e44', label: 'Muu kunnossapito' },
+        ],
+      },
+      {
+        name: 'Liikennetiedotteet',
+        description: 'Onnettomuudet, häiriöt ja tietyöt',
+        layer: trafficMessageLayer(map),
+        legend: [
+          { color: '#d7263d', label: 'Onnettomuus' },
+          { color: '#8e44ad', label: 'Muu häiriö' },
+          { color: '#e07b00', label: 'Tietyö' },
+        ],
+      },
+      {
+        name: 'Tiesääasemat',
+        description: 'Lämpötila, tuuli ja tienpinta',
+        layer: stationLayer(map, 'Tiesääasemat', '/api/weather/v1', '#1e88e5', weatherPopup),
+        legend: [{ color: '#1e88e5', label: 'Tiesääasema' }],
+      },
+      {
+        name: 'LAM-pisteet',
+        description: 'Liikennemäärät ja nopeudet',
+        layer: stationLayer(map, 'LAM-pisteet', '/api/tms/v1', '#6d4c41', tmsPopup),
+        legend: [{ color: '#6d4c41', label: 'LAM-piste' }],
+      },
+      {
+        name: 'Kelikamerat',
+        description: 'Tuoreet kuvat teiltä',
+        layer: weatherCameraLayer(map),
+        legend: [{ color: '#444', label: 'Kelikamera' }],
+      },
+    ],
   };
 }
