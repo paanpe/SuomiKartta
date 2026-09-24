@@ -23,6 +23,14 @@ npm run build      # tyyppitarkistus + tuotantoversio kansioon dist/
 npm run preview    # tuotantoversion esikatselu
 ```
 
+## Julkaisu GitHub Pagesiin
+
+`.github/workflows/deploy.yml` kääntää ja julkaisee sovelluksen automaattisesti
+aina, kun `main`-haaraan tulee muutoksia. Kertaluonteinen asetus: repositorion
+**Settings → Pages → Build and deployment → Source** -kohtaan valitaan
+**GitHub Actions**. Sovellus näkyy osoitteessa
+https://paanpe.github.io/SuomiKartta/.
+
 ## Rakenne
 
 ```
