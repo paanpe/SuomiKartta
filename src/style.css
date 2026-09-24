@@ -193,6 +193,30 @@ body {
   margin: 6px 0 0;
 }
 
+.rail-table th,
+.rail-table td {
+  padding: 2px 6px 2px 0;
+  vertical-align: top;
+}
+
+.rail-late {
+  color: #d7263d;
+  font-weight: 600;
+}
+
+.rail-passed {
+  color: var(--color-muted);
+}
+
+.rail-stops {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.rail-stops summary {
+  cursor: pointer;
+}
+
 /* ---- Layer panel ---- */
 
 :root {

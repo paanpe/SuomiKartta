@@ -2,6 +2,7 @@ import L from 'leaflet';
 import { MML_PROXY_URL } from './config';
 import { createDigitrafficOverlays } from './digitraffic';
 import { createLayerPanel } from './layer-panel';
+import { createRailOverlays } from './rail';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -77,7 +78,10 @@ export function createMap(
 
   const baseLayers = createBaseLayers();
   Object.values(baseLayers)[0].addTo(map);
-  createLayerPanel(map, panel, panelToggle, baseLayers, [createDigitrafficOverlays(map)]);
+  createLayerPanel(map, panel, panelToggle, baseLayers, [
+    createDigitrafficOverlays(map),
+    createRailOverlays(map),
+  ]);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
   addLocateControl(map);
