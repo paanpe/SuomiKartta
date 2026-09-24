@@ -11,6 +11,10 @@ Selainpohjainen karttasovellus, joka keskittyy Suomeen. Rakennettu
 - Paikannimi- ja osoitehaku Maanmittauslaitoksen hakupalvelulla
 - Ilman MML-välityspalvelinta sovellus käyttää OpenStreetMapia, OpenTopoMapia ja
   Nominatim-hakua
+- Tieliikenteen tiedot [Digitraffic](https://www.digitraffic.fi/tieliikenne/)-rajapinnasta
+  omina tasoinaan (oletuksena pois päältä): auraus- ja kunnossapitoajoneuvot
+  (päivittyy minuutin välein), liikennetiedotteet ja tietyöt (2 min), tiesääasemat,
+  LAM-pisteet ja kelikamerat (mittaukset ja kuvat haetaan, kun pisteen avaa)
 - Oman sijainnin näyttäminen (◎-painike)
 - Klikkaus kartalla näyttää pisteen koordinaatit (WGS84)
 - Mittakaava
@@ -90,6 +94,7 @@ src/main.ts                 käynnistys
 src/config.ts               MML-välityspalvelimen osoite (VITE_MML_PROXY_URL)
 src/map.ts                  kartan luonti, taustakartat, sijaintipainike
 src/search.ts               paikkahaku (MML tai Nominatim)
+src/digitraffic.ts          Digitraffic-tieliikennetasot
 src/style.css               tyylit
 api/src/functions/mml.js    MML-välityspalvelin (Static Web Appin funktio)
 public/staticwebapp.config.json  Static Web Appin asetukset
@@ -102,3 +107,5 @@ Maanmittauslaitoksen aineistot ovat
 OpenStreetMapin karttaruutu- ja Nominatim-palveluilla on
 [käyttöehdot](https://operations.osmfoundation.org/policies/), jotka sopivat vain
 kehitykseen ja pieneen käyttöön.
+Digitrafficin liikennetiedot ovat Fintrafficin avointa dataa
+(CC BY 4.0), eikä niiden käyttö vaadi avainta.
