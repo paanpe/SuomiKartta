@@ -159,8 +159,9 @@ export function liveLayer(
   label: string,
   load: (group: L.LayerGroup) => Promise<void>,
   refreshMs?: number,
+  attribution = ATTRIBUTION,
 ): L.LayerGroup {
-  const group = L.layerGroup(undefined, { attribution: ATTRIBUTION });
+  const group = L.layerGroup(undefined, { attribution });
   let timer: number | undefined;
   let loaded = false;
   let loading = false;

@@ -217,6 +217,15 @@ body {
   cursor: pointer;
 }
 
+/* Time of the precipitation radar image, shown while the radar is on. */
+.fmi-radar-time {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.85);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
+  font-size: 0.8rem;
+}
+
 /* ---- Layer panel ---- */
 
 :root {

@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import { MML_PROXY_URL } from './config';
 import { createDigitrafficOverlays } from './digitraffic';
+import { createWeatherOverlays } from './fmi';
 import { createLayerPanel } from './layer-panel';
 import { createRailOverlays } from './rail';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -81,6 +82,7 @@ export function createMap(
   createLayerPanel(map, panel, panelToggle, baseLayers, [
     createDigitrafficOverlays(map),
     createRailOverlays(map),
+    createWeatherOverlays(map),
   ]);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
